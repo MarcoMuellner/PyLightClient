@@ -192,3 +192,9 @@ local_settings.py
 
 .env
 db.sqlite3
+
+linux-venv/
+
+\.idea/
+
+windows-venv/
