@@ -1,4 +1,6 @@
 import socket
+import fcntl
+import struct
 from twisted.internet.protocol import Protocol
 
 import time
@@ -6,7 +8,7 @@ import time
 
 class NetworkClient(Protocol):
     def __init__(self, port: int, addr: str = ''):
-        self.ip = socket.gethostbyname(socket.gethostname())
+        self.ip = self.get_ip_address('eth0')
         print(self.ip)
         self.port = port
 
@@ -23,6 +25,7 @@ class NetworkClient(Protocol):
         while True:
             for i in ipList:
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.bind((self.ip, 0))
                 print("Checking address {0}".format(ipTemplate.format(i)))
                 socket.setdefaulttimeout(1)
                 result = sock.connect_ex((ipTemplate.format(i),self.port))
@@ -47,5 +50,13 @@ class NetworkClient(Protocol):
             self.registeredProcesses.append(process)
         except AttributeError:
             self.registeredProcesses = [process]
+
+    def get_ip_address(self,ifname):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        return socket.inet_ntoa(fcntl.ioctl(
+            s.fileno(),
+            0x8915,  # SIOCGIFADDR
+            struct.pack('256s', ifname[:15])
+        )[20:24])
 
 
