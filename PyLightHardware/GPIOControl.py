@@ -26,8 +26,8 @@ class GPIOControl:
         if piHW:
             GPIO.setmode(GPIO.BOARD)
         #Defines the "Unused" pins
-        self._allIOs = [3, 5, 7, 8, 10, 11, 12, 13, 15, 16, 18, 19, 21, 22, 23, 24, 26, 29, 31, 32, 33, 35, 36, 37, 38]
-        self._openIOs = self._allIOs[:]
+        self.allIOS = [3, 5, 7, 8, 10, 11, 12, 13, 15, 16, 18, 19, 21, 22, 23, 24, 26, 29, 31, 32, 33, 35, 36, 37, 38]
+        self._openIOs = self.allIOS[:]
         self._usedIOs = {}
 
     def newOutput(self, name: str, pin: int) -> bool:
@@ -60,7 +60,7 @@ class GPIOControl:
         if not isinstance(ioType,IOType):
             raise TypeError("ioType must be of IOType enum!")
 
-        if pin not in self._allIOs:
+        if pin not in self.allIOS:
             raise ValueError(f"Pin {pin} is not in the available IOs!")
 
         if pin not in self._openIOs:
