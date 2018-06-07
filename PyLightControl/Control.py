@@ -7,9 +7,11 @@ from PyLightControl.Network import NetworkClient
 from Support.Globals import *
 from Support.Commandos import *
 
+import time
 
 
-class Control:
+
+class Controller:
     def __init__(self):
         self.hwControl = GPIOControl()
         #TODO previously read from db if we already have an old connection
@@ -19,13 +21,15 @@ class Control:
         self.startProcesses()
 
     def startProcesses(self):
+        self.nwClient.registerProces(self)
         point = TCP4ClientEndpoint(reactor,self.nwClient.server_addres,port)
         connectProtocol(point,self.nwClient)
-        reactor.callInThread(self.worker())
+        reactor.callInThread(self.worker)
         reactor.run()
 
     def worker(self):
-        self.sendNetworkMessage(cmd_signup)
+        self.sendNetworkMessage(cmd_signup[0])
+        print("STARTING COMMAND LOOP!")
         while True:
             message = self.queue.get()
             self.parse_message(message)
@@ -38,27 +42,27 @@ class Control:
     def put_message(self,msg):
         self.queue.put(msg)
 
-    def parse_message(self,msg):
-        msgParts = str(msg).split(":")
+    def parse_message(self,msg:bytes):
+        msgParts = msg.decode().split(":")
 
-        if str(msgParts[0]) is cmd_welcome[0]:
+        if str(msgParts[0]) == cmd_welcome[0]:
             self.checkMessage(msgParts,cmd_welcome)
             self.name = msgParts[1]
             allIOS = self.hwControl.allIOs
-            self.sendNetworkMessage(cmd_all_io_list+f":{self.name}:{allIOS}")
+            self.sendNetworkMessage(cmd_all_io_list[0]+f":{self.name}:{allIOS}")
             usedIOS = self.hwControl.getUsedIOS()
-            self.sendNetworkMessage(cmd_used_io_list+f":{self.name}:{usedIOS}")
+            self.sendNetworkMessage(cmd_used_io_list[0]+f":{self.name}:{usedIOS}")
 
-        elif str(msgParts[0]) is cmd_add_output[0]:
+        elif str(msgParts[0]) == cmd_add_output[0]:
             self.checkMessage(msgParts, cmd_add_output)
             self.hwControl.newOutput(msgParts[1],int(msgParts[2]))
             #TODO remember output here in database
 
-        elif str(msgParts[0]) is cmd_set_output[0]:
+        elif str(msgParts[0]) == cmd_set_output[0]:
             self.checkMessage(msgParts, cmd_set_output)
             self.hwControl.setOutput(msgParts[1])
 
-        elif str(msgParts[0]) is cmd_reset_outptut[0]:
+        elif str(msgParts[0]) == cmd_reset_outptut[0]:
             self.checkMessage(msgParts, cmd_reset_outptut)
             self.hwControl.resetOutput(msgParts[0])
 

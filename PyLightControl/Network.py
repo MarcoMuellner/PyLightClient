@@ -3,8 +3,6 @@ from twisted.internet.protocol import Protocol
 
 import time
 
-from PyLightControl import Control
-
 
 class NetworkClient(Protocol):
     def __init__(self, port: int, addr: str = ''):
@@ -30,6 +28,7 @@ class NetworkClient(Protocol):
                 result = sock.connect_ex((ipTemplate.format(i),self.port))
                 if result is 0:
                     print(f"Found server at {ipTemplate.format(i)}")
+                    sock.close()
                     return ipTemplate.format(i)
                 sock.close()
             print("Cannot find a valid server!")
@@ -43,7 +42,7 @@ class NetworkClient(Protocol):
         for process in self.registeredProcesses:
             process.put_message(data)
 
-    def registerProces(self,process : Control):
+    def registerProces(self, process):
         try:
             self.registeredProcesses.append(process)
         except AttributeError:
