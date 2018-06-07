@@ -56,7 +56,7 @@ class NetworkClient(Protocol):
         return socket.inet_ntoa(fcntl.ioctl(
             s.fileno(),
             0x8915,  # SIOCGIFADDR
-            struct.pack('256s', ifname[:15])
+            struct.pack(b'256s', ifname[:15])
         )[20:24])
 
 
