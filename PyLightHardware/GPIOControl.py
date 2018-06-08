@@ -7,11 +7,8 @@ except Exception as e:
     print("Setting Hardware to False")
     piHW = False
 
-from enum import Enum
-
-class IOType(Enum):
-    OUTPUT = 1
-    INPUT = 2
+from PyLightControl.Database import DB
+from PyLightORM.models import IOType
 
 
 class GPIOControl:
@@ -19,16 +16,25 @@ class GPIOControl:
     GPIOControl allows for a central point of controlling the IOs on the Pi. Access the IOs through custom names 
     for each output (preferably defined via the  Web interface).     
     """
-    def __init__(self):
+    def __init__(self,resetFlag: bool):
         """
         Sets up the Board, creates lists for available pins
         """
         if piHW:
             GPIO.setmode(GPIO.BOARD)
         #Defines the "Unused" pins
-        self.allIOs = [3, 5, 7, 8, 10, 11, 12, 13, 15, 16, 18, 19, 21, 22, 23, 24, 26, 29, 31, 32, 33, 35, 36, 37, 38]
-        self._openIOs = self.allIOs[:]
-        self._usedIOs = {}
+        self.allIOs = DB.inst().getAllIOs()
+        if resetFlag:
+            self._openIOs = self.allIOs[:]
+            self._usedIOs = {}
+            DB.inst().removeAllUsedIO()
+        else:
+            self._usedIOs = DB.inst().getUsedIOs()
+            self._openIOs = self.allIOs[:]
+            self._openIOs.remove(DB.inst().getUsedIOPinNr)
+            for i in self._usedIOs:
+                if i.type == IOType.OUTPUT:
+                    self.setOutputState(i.name,i.active)
 
     def newOutput(self, name: str, pin: int) -> bool:
         """
@@ -81,17 +87,16 @@ class GPIOControl:
 
         self._openIOs.remove(pin)
 
-        if ioType is not IOType.OUTPUT and ioType is not IOType.INPUT:
-            raise ValueError(f"IOType is not Output nor input! Probably something that is not yet implemented? Type is {ioType}")
-
+        if ioType not in DB.inst().getAllIOTypes():
+            raise ValueError(f"IOType is not Output nor input! Probably something that is not yet implemented? "
+                             f"Type is {ioType}. Available is {DB.inst().getAllIOTypes()}")
+        DB.inst().addUsedIO(name,pin,ioType)
         return True
 
 
     def removeIO(self, pin: int):
         """
-        Removes an IO from the internal dict and frees its pin. No longer accessible!
-        :param ioType: Type of the IO. Must be Enum of Type IOType
-        :param name: Human readable name for the IO
+        Removes an IO from the internal dict and frees its pin.
         :param pin: Pin number that should be used
         """
         try:
@@ -107,6 +112,11 @@ class GPIOControl:
                 del self._usedIOs[name]
         except UnboundLocalError:
             return
+        finally:
+            try:
+                DB.inst().removeUsedIO(DB.inst().getPinName(pin))
+            except ValueError:
+                pass
 
 
     def setOutput(self, name: str):
@@ -131,12 +141,14 @@ class GPIOControl:
         :param state: State to set to
         :return: True if successful, False if not.
         """
-        if self._usedIOs[name][1] is IOType.OUTPUT:
+        if self._usedIOs[name][1] == IOType.OUTPUT:
             if piHW:
                 GPIO.output(self._usedIOs[name][0], state)
             self._usedIOs[name][2] = state
+            DB.inst().changeIOState(name,state)
         else:
-            raise TypeError(f"We can only set and reset Outputs! IO {name} is type {self._usedIOs[name][2]}")
+            print(self._usedIOs)
+            raise TypeError(f"We can only set and reset Outputs! IO {name} is type {self._usedIOs[name][1]}")
 
 
     def getIOState(self, name: str) -> bool:

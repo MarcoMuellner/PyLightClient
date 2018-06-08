@@ -1,14 +1,17 @@
 import pytest
-from PyLightHardware import GPIOControl,IOType
+from PyLightHardware.GPIOControl import GPIOControl,IOType
 
+@pytest.fixture(autouse=True)
+def enable_db_access_for_all_tests(db):
+    pass
 
 @pytest.fixture(scope='module')
 def moduleSetup(request):
-    return GPIOControl()
+    return GPIOControl(True)
 
 @pytest.fixture(scope='function')
 def functionSetup(request):
-    return GPIOControl()
+    return GPIOControl(True)
 
 testCases = [("One",3,IOType.OUTPUT),
              ("Two",5,IOType.OUTPUT),

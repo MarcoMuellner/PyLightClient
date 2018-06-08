@@ -1,13 +1,17 @@
-from PyLightORM.models import UsedIOs,ClientSettings,IOs,IOTypes
+from PyLightORM.models import UsedIOs,ClientSettings,IOs,IOTypes,IOType
+from django.core.exceptions import ObjectDoesNotExist
 from Support import Singleton
 
 @Singleton
 class DB:
     def getAllIOs(self):
-        return list(IOs.objects.all().values_list('ioNr',flat=True))[1:]
+        return list(IOs.objects.exclude(pk=0).values_list('ioNr',flat=True))
 
     def getAllIOTypes(self):
-        return list(IOTypes.objects.all().values_list('pk',flat=True))
+        typeList = []
+        for i in IOTypes.objects.exclude(pk=0).values_list('ioType'):
+            typeList.append(IOType(i[0]))
+        return typeList
 
     def getUsedIOs(self):
         usedIOs = {}
@@ -18,6 +22,9 @@ class DB:
 
         return usedIOs
 
+    def getUsedIOPinNr(self):
+        return list(UsedIOs.objects.all().values_list('pin_id',flat=True))[1:]
+
     def addUsedIO(self, name, io, ioType):
         usedIOList = UsedIOs.objects.filter(name=name)
         if len(usedIOList) > 0:
@@ -25,22 +32,29 @@ class DB:
                              f"are {list(UsedIOs.objects.all().values_list('name',flat=True))}")
 
         try:
-            io = IOs.objects.filter(ioNr=io)[0]
-        except IndexError:
+            io = IOs.objects.get(ioNr=io)
+        except ObjectDoesNotExist:
             raise ValueError(f"No Pin available with nr {io}. Pins available are: {self.getAllIOs()}")
 
         try:
-            ioType = IOTypes.objects.filter(pk=int(ioType))[0]
-        except IndexError:
+            ioTypus = IOTypes.objects.get(ioType=ioType)
+        except ObjectDoesNotExist:
             raise ValueError(f"No IOType with type {ioType} available. Available types are {list(IOTypes.objects.all())}")
 
-        newIO = UsedIOs(name=name,pin=io,type=ioType,active=False)
+        newIO = UsedIOs(name=name,pin=io,type=ioTypus,active=False)
         newIO.save()
+
+    def removeUsedIO(self,name):
+        UsedIOs.objects.filter(name=name).delete()
+
+    def removeAllUsedIO(self):
+        UsedIOs.objects.exclude(pk=0).delete()
+
 
     def changeIOState(self,name,state):
         try:
-            usedIO = UsedIOs.objects.filter(name=name)[0]
-        except IndexError:
+            usedIO = UsedIOs.objects.get(name=name)
+        except ObjectDoesNotExist:
             raise ValueError(f"There is no IO assigned with name {name}. Allready assigned names "
                              f"are {list(UsedIOs.objects.all().values_list('name',flat=True))}")
 
@@ -49,8 +63,8 @@ class DB:
 
     def getIOState(self,name):
         try:
-            usedIO = UsedIOs.objects.filter(name=name)[0]
-        except IndexError:
+            usedIO = UsedIOs.objects.get(name=name)
+        except ObjectDoesNotExist:
             raise ValueError(f"There is no IO assigned with name {name}. Allready assigned names "
                              f"are {list(UsedIOs.objects.all().values_list('name',flat=True))}")
 
@@ -59,13 +73,13 @@ class DB:
 
     def getPinName(self,io):
         try:
-            io = IOs.objects.filter(ioNr=io)[0]
-        except IndexError:
+            io = IOs.objects.get(ioNr=io)
+        except ObjectDoesNotExist:
             raise ValueError(f"No Pin available with nr {io}. Pins available are: {self.getAllIOs()}")
 
         try:
-            usedIO = UsedIOs.objects.filter(pin=io)[0]
-        except IndexError:
+            usedIO = UsedIOs.objects.get(pin=io)
+        except ObjectDoesNotExist:
             raise ValueError(f"There is no IO assigned with pin {io}. Allready assigned names "
                              f"are {list(UsedIOs.objects.all().values_list('pin',flat=True))}")
 
@@ -73,8 +87,8 @@ class DB:
 
     def setPiName(self,name):
         try:
-            settings = ClientSettings.objects.filter(pk=1)[0]
-        except IndexError:
+            settings = ClientSettings.objects.get(pk=1)
+        except ObjectDoesNotExist:
             settings = ClientSettings(pk=1)
 
         settings.clientName = name
@@ -82,24 +96,24 @@ class DB:
 
     def getPiName(self):
         try:
-            settings = ClientSettings.objects.filter(pk=1)[0]
-        except IndexError:
-            settings = ClientSettings.objects.filter(pk=0)[0]
+            settings = ClientSettings.objects.get(pk=1)
+        except ObjectDoesNotExist:
+            settings = ClientSettings.objects.get(pk=0)
 
         return settings.clientName
 
     def getServerAddress(self):
         try:
-            settings = ClientSettings.objects.filter(pk=1)[0]
-        except IndexError:
-            settings = ClientSettings.objects.filter(pk=0)[0]
+            settings = ClientSettings.objects.get(pk=1)
+        except ObjectDoesNotExist:
+            settings = ClientSettings.objects.get(pk=0)
 
         return settings.serverAddress
 
     def setServerAddress(self,address):
         try:
-            settings = ClientSettings.objects.filter(pk=1)[0]
-        except IndexError:
+            settings = ClientSettings.objects.get(pk=1)
+        except ObjectDoesNotExist:
             settings = ClientSettings(pk=1)
 
         settings.serverAddress = address

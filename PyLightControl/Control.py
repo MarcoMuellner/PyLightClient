@@ -4,6 +4,7 @@ from queue import Queue
 
 from PyLightHardware import GPIOControl
 from PyLightControl.Network import NetworkClient
+from PyLightControl.Database import DB
 from Support.Globals import *
 from Support.Commandos import *
 
@@ -31,9 +32,15 @@ class Controller:
         The Constructor sets up Hardware, DB and Network. It then starts all processes. For the constructors of
         Network, Hardware and DB see each according class
         """
-        self.hwControl = GPIOControl()
+        oldIp = DB.getServerAddress()
+        self.nwClient = NetworkClient(port,oldIp)
+        self.resetFlag = False
+        if oldIp != self.nwClient.server_addres:
+            self.resetFlag = True
+
+        self.hwControl = GPIOControl(self.resetFlag)
         #TODO previously read from db if we already have an old connection
-        self.nwClient = NetworkClient(port)
+
         self.queue = Queue()
 
         self.startProcesses()

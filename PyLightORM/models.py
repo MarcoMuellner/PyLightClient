@@ -1,4 +1,11 @@
 import sys
+from enum import Enum
+
+
+class IOType(Enum):
+    NONE = "IOType.NONE"
+    OUTPUT =  "IOType.OUTPUT"
+    INPUT = "IOType.INPUT"
 
 try:
     from django.db import models
@@ -10,7 +17,7 @@ class IOs(models.Model):
     ioNr = models.IntegerField(primary_key=True,verbose_name='physical io nr on pi')
 
 class IOTypes(models.Model):
-    name = models.CharField(max_length=255,verbose_name="Name of the output")
+    ioType = models.CharField(max_length=255,choices=[(tag,tag.value) for tag in IOType],verbose_name="Type of output")
 
 class UsedIOs(models.Model):
     name = models.CharField(max_length=255,verbose_name='human readable name for the io',unique=True)

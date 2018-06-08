@@ -3,21 +3,21 @@
         "model":"PyLightORM.IoTypes",
         "pk":0,
         "fields": {
-          "name": "None"
+          "ioType": "IOType.None"
         }
   },
   {
         "model":"PyLightORM.IoTypes",
         "pk":1,
         "fields": {
-          "name": "Output"
+          "ioType": "IOType.OUTPUT"
         }
   },
   {
         "model":"PyLightORM.IoTypes",
         "pk":2,
         "fields": {
-          "name": "Input"
+          "ioType": "IOType.INPUT"
         }
   }
 ]
