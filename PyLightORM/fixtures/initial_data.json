@@ -1,10 +1,18 @@
 [
     {
         "model":"PyLightORM.UsedIOs",
-        "pk":1,
+        "pk":0,
         "fields":{
             "name":"",
             "active":"False"
+        }
+    },
+    {
+        "model":"PyLightORM.ClientSettings",
+        "pk":0,
+        "fields":{
+            "clientName":"",
+            "serverAddress":""
         }
     }
 ]

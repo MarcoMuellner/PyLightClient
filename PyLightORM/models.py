@@ -13,8 +13,8 @@ class UsedIOs(models.Model):
 
 class IOs(models.Model):
     ioNr = models.IntegerField(primary_key=True,verbose_name='physical io nr on pi')
-    usedIOId = models.OneToOneField(UsedIOs,on_delete=models.CASCADE,verbose_name='link to the used ios')
+    usedIOId = models.ForeignKey(UsedIOs,on_delete=models.CASCADE,verbose_name='link to the used ios',default=0)
 
-class Client_settings(models.Model):
+class ClientSettings(models.Model):
     clientName = models.CharField(max_length=255,verbose_name='Name of the pi client')
     serverAddress = models.CharField(max_length=255,verbose_name='Address of the server that set the ip of the pi')
