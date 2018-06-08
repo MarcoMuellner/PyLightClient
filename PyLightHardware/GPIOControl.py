@@ -31,9 +31,9 @@ class GPIOControl:
         else:
             self._usedIOs = DB.inst().getUsedIOs()
             self._openIOs = self.allIOs[:]
-            self._openIOs.remove(DB.inst().getUsedIOPinNr)
+            self._openIOs = [x for x in self._openIOs if x not in DB.inst().getUsedIOPinNr()]
             for i in self._usedIOs:
-                if i.type == IOType.OUTPUT:
+                if i[1] == IOType.OUTPUT:
                     self.setOutputState(i.name,i.active)
 
     def newOutput(self, name: str, pin: int) -> bool:

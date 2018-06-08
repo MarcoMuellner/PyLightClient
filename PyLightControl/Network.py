@@ -5,6 +5,7 @@ from twisted.internet.protocol import Protocol
 
 import time
 
+from Support.Commandos import *
 
 class NetworkClient(Protocol):
     def __init__(self, port: int, addr: str = '',interface = 'eth0'):
@@ -75,5 +76,10 @@ class NetworkClient(Protocol):
             0x8915,  # SIOCGIFADDR
             struct.pack(b'256s', str.encode(ifname[:15]))
         )[20:24])
+
+    def connectionMade(self):
+        print("Client connected!")
+        for process in self.registeredProcesses:
+            process.put_message(str.encode(cmd_client_connected[0]))
 
 

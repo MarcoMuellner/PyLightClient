@@ -32,14 +32,15 @@ class Controller:
         The Constructor sets up Hardware, DB and Network. It then starts all processes. For the constructors of
         Network, Hardware and DB see each according class
         """
-        oldIp = DB.getServerAddress()
+        oldIp = DB.inst().getServerAddress()
         self.nwClient = NetworkClient(port,oldIp)
         self.resetFlag = False
+        self.killFlag = False
         if oldIp != self.nwClient.server_addres:
             self.resetFlag = True
+            DB.inst().setServerAddress(self.nwClient.server_addres)
 
         self.hwControl = GPIOControl(self.resetFlag)
-        #TODO previously read from db if we already have an old connection
 
         self.queue = Queue()
 
@@ -60,11 +61,12 @@ class Controller:
         """
         This is the worker thread. It waits for incoming queue commandos and works them off sequentially.
         """
-        self.sendNetworkMessage(cmd_signup[0])
         print("STARTING COMMAND LOOP!")
         while True:
             message = self.queue.get()
             self.parse_message(message)
+            if self.killFlag:
+                break
 
 
     def setupHardware(self):
@@ -85,6 +87,8 @@ class Controller:
         if str(msgParts[0]) == cmd_welcome[0]:
             self.checkMessage(msgParts,cmd_welcome)
             self.name = msgParts[1]
+            DB.inst().setPiName(self.name)
+
             allIOS = self.hwControl.allIOs
             self.sendNetworkMessage(cmd_all_io_list[0]+f":{self.name}:{allIOS}")
             usedIOS = self.hwControl.getUsedIOS()
@@ -103,8 +107,15 @@ class Controller:
             self.checkMessage(msgParts, cmd_reset_outptut)
             self.hwControl.resetOutput(msgParts[1])
 
+        elif str(msgParts[0]) == cmd_shutdown_now[0]:
+            self.killFlag = True
+            reactor.callFromThread(reactor.stop)
+
+        elif str(msgParts[0]) == cmd_client_connected[0]:
+            self.sendNetworkMessage(cmd_signup[0])
+
         else:
-            raise ValueError(f"Kommando {msgParts[0]} not known to client!")
+            print(f"Kommando {msgParts[0]} not known to client!")
 
 
     def sendNetworkMessage(self,msg):
