@@ -12,7 +12,25 @@ import time
 
 
 class Controller:
+    """
+    The Controller class provides a central entry point to PyLightClient. It starts the network procedures, reads
+    all IOs from HW Control, and spawns the necessary threads and/or processes. It also handles all incoming commands
+    and performs the actions according to the command. See Commandos file for all commands
+
+    The general procedure is this:
+    - Get all IOs
+    - Find Server with NetworkClient
+    - spawn worker and network thread
+
+    Communication between Network and worker happens using a queue. The Control unit registers this instance as
+    an interested party to the network communication, which in turn will put the commandos in the queue. It then will
+    work of each command of the queue sequentially.
+    """
     def __init__(self):
+        """
+        The Constructor sets up Hardware, DB and Network. It then starts all processes. For the constructors of
+        Network, Hardware and DB see each according class
+        """
         self.hwControl = GPIOControl()
         #TODO previously read from db if we already have an old connection
         self.nwClient = NetworkClient(port)
@@ -21,6 +39,10 @@ class Controller:
         self.startProcesses()
 
     def startProcesses(self):
+        """
+        Registers the instance to the network client, creates an TCP4 Endpoint and runs the worker thread as well
+        as the reactor thread
+        """
         self.nwClient.registerProces(self)
         point = TCP4ClientEndpoint(reactor,self.nwClient.server_addres,port)
         connectProtocol(point,self.nwClient)
@@ -28,6 +50,9 @@ class Controller:
         reactor.run()
 
     def worker(self):
+        """
+        This is the worker thread. It waits for incoming queue commandos and works them off sequentially.
+        """
         self.sendNetworkMessage(cmd_signup[0])
         print("STARTING COMMAND LOOP!")
         while True:
@@ -43,6 +68,11 @@ class Controller:
         self.queue.put(msg)
 
     def parse_message(self,msg:bytes):
+        """
+        Parses Network commandos from Commando and performs actions. It also checks if the commando has the expected
+        length.
+        :param msg: Network message
+        """
         msgParts = msg.decode().split(":")
 
         if str(msgParts[0]) == cmd_welcome[0]:
