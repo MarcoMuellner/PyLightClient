@@ -7,6 +7,7 @@ from twisted.internet.protocol import Protocol
 from twisted.internet.protocol import Factory
 from twisted.internet.endpoints import TCP4ServerEndpoint,TCP4ClientEndpoint, connectProtocol
 from twisted.internet import reactor
+import time
 
 from PyLightControl import NetworkClient
 from Support.Globals import *
@@ -79,15 +80,27 @@ class DummyControl:
         self.p.join()
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='module')
 def functionSetup(request):
     control = DummyControl()
     def cleanup():
         control.stop()
     request.addfinalizer(cleanup)
-    return NetworkClient(port),control
+    return NetworkClient(port,interface='lo'),control
 
 
 def testAddressLookup(functionSetup : Tuple[NetworkClient,DummyControl]):
     nwClient,control = functionSetup
-    assert nwClient.server_addres == '127.0.1.0'
+    assert nwClient.server_addres == '127.0.0.1'
+
+def testCheckServer(functionSetup: Tuple[NetworkClient,DummyControl]):
+    nwClient, control = functionSetup
+    assert nwClient.checkServer('1','127.0.0.{0}') == '127.0.0.1'
+
+def testCheckFindIP(functionSetup: Tuple[NetworkClient,DummyControl]):
+    nwClient, control = functionSetup
+    assert nwClient.get_ip_address('lo') == '127.0.0.1'
+
+def testCheckIPParts(functionSetup: Tuple[NetworkClient,DummyControl]):
+    nwClient, control = functionSetup
+    assert nwClient.getIPParts('127.0.0.1') == (range(0,256),'127.0.0.{0}',['127','0','0','1'])

@@ -64,7 +64,7 @@ class Controller:
 
         elif str(msgParts[0]) == cmd_reset_outptut[0]:
             self.checkMessage(msgParts, cmd_reset_outptut)
-            self.hwControl.resetOutput(msgParts[0])
+            self.hwControl.resetOutput(msgParts[1])
 
         else:
             raise ValueError(f"Kommando {msgParts[0]} not known to client!")

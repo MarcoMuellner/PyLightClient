@@ -7,35 +7,52 @@ import time
 
 
 class NetworkClient(Protocol):
-    def __init__(self, port: int, addr: str = ''):
-        self.ip = self.get_ip_address('eth0')
+    def __init__(self, port: int, addr: str = '',interface = 'eth0'):
+        self.ip = self.get_ip_address(interface)
         print(self.ip)
         self.port = port
 
         if addr is not '' and len(addr.split('.')) == 4:
-            self.server_addres = addr
+            _,ipTemplate,ipParts = self.getIPParts(addr)
+            ip = self.checkServer(ipParts[3],ipTemplate)
+            if ip != '':
+                print(f"Found server at {ip}")
+                self.server_addres = addr
+            else:
+                self.server_addres = self.getServer()
         else:
             self.server_addres= self.getServer()
 
     def getServer(self) -> tuple:
-        ipList = range(0,256)
-        ipParts = self.ip.split(".")
-        ipTemplate = ipParts[0]+'.'+ipParts[1]+'.'+ipParts[2]+'.{0}'
+        ipList,ipTemplate,_ = self.getIPParts(self.ip)
 
         while True:
             for i in ipList:
-                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                sock.bind((self.ip, 0))
-                print("Checking address {0}".format(ipTemplate.format(i)))
-                socket.setdefaulttimeout(1)
-                result = sock.connect_ex((ipTemplate.format(i),self.port))
-                if result is 0:
-                    print(f"Found server at {ipTemplate.format(i)}")
-                    sock.close()
-                    return ipTemplate.format(i)
-                sock.close()
+                ip = self.checkServer(i,ipTemplate)
+                if ip != '':
+                    print(f"Found server at {ip}")
+                    return ip
             print("Cannot find a valid server!")
             time.sleep(10)
+
+    def checkServer(self,i,ipTemplate):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind((self.ip, 0))
+        print("Checking address {0}".format(ipTemplate.format(i)))
+        socket.setdefaulttimeout(1)
+        result = sock.connect_ex((ipTemplate.format(i), self.port))
+        if result is 0:
+            sock.close()
+            return ipTemplate.format(i)
+        sock.close()
+        return ''
+
+    def getIPParts(self,ip):
+        ipList = range(0, 256)
+        ipParts = ip.split(".")
+        ipTemplate = ipParts[0] + '.' + ipParts[1] + '.' + ipParts[2] + '.{0}'
+
+        return ipList,ipTemplate,ipParts
 
     def sendMessage(self,msg : str):
         self.transport.write(msg.encode())
