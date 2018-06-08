@@ -13,11 +13,11 @@ class IOTypes(models.Model):
     name = models.CharField(max_length=255,verbose_name="Name of the output")
 
 class UsedIOs(models.Model):
-    name = models.CharField(max_length=255,verbose_name='human readable name for the io')
+    name = models.CharField(max_length=255,verbose_name='human readable name for the io',unique=True)
     pin = models.OneToOneField(IOs,on_delete=models.CASCADE,verbose_name='Pin nr')
     type = models.ForeignKey(IOTypes,on_delete=models.CASCADE,verbose_name='Type of IO')
     active = models.BooleanField(default=False,verbose_name="Active/Non Active IO")
 
 class ClientSettings(models.Model):
-    clientName = models.CharField(max_length=255,verbose_name='Name of the pi client')
-    serverAddress = models.CharField(max_length=255,verbose_name='Address of the server that set the ip of the pi')
+    clientName = models.CharField(max_length=255,verbose_name='Name of the pi client',default="")
+    serverAddress = models.CharField(max_length=255,verbose_name='Address of the server that set the ip of the pi',default="")
