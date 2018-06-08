@@ -4,7 +4,9 @@ from django.db import migrations
 from django.core.management import call_command
 
 def load_my_initial_data(apps, schema_editor):
-    call_command("loaddata", "initial_data.json")
+    call_command("loaddata", "ios.json")
+    call_command("loaddata", "io_types.json")
+    call_command("loaddata", "used_ios.json")
 
 
 class Migration(migrations.Migration):

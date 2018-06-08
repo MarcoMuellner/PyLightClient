@@ -1,0 +1,23 @@
+[
+  {
+        "model":"PyLightORM.IoTypes",
+        "pk":0,
+        "fields": {
+          "name": "None"
+        }
+  },
+  {
+        "model":"PyLightORM.IoTypes",
+        "pk":1,
+        "fields": {
+          "name": "Output"
+        }
+  },
+  {
+        "model":"PyLightORM.IoTypes",
+        "pk":2,
+        "fields": {
+          "name": "Input"
+        }
+  }
+]

@@ -11,7 +11,7 @@ from enum import Enum
 
 class IOType(Enum):
     OUTPUT = 1
-    INPUT = 1
+    INPUT = 2
 
 
 class GPIOControl:

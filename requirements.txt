@@ -2,5 +2,4 @@ django
 pytest
 twisted
 RPi.GPIO
-Django
 pytz==2017.2
