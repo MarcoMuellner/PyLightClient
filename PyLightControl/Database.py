@@ -18,7 +18,7 @@ class DB:
         for i in UsedIOs.objects.all():
             if i.pk ==0:
                 continue
-            usedIOs[i.name] = [i.pin_id,i.type_id,i.active]
+            usedIOs[i.name] = [i.pin_id,IOType(i.type.ioType),i.active]
 
         return usedIOs
 

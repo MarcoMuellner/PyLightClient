@@ -32,9 +32,10 @@ class GPIOControl:
             self._usedIOs = DB.inst().getUsedIOs()
             self._openIOs = self.allIOs[:]
             self._openIOs = [x for x in self._openIOs if x not in DB.inst().getUsedIOPinNr()]
-            for i in self._usedIOs:
-                if i[1] == IOType.OUTPUT:
-                    self.setOutputState(i.name,i.active)
+            for key,val in self._usedIOs.items():
+                if val[1] == IOType.OUTPUT:
+                    GPIO.setup(val[0], GPIO.OUT, initial=False)
+                    self.setOutputState(key,val[2])
 
     def newOutput(self, name: str, pin: int) -> bool:
         """
