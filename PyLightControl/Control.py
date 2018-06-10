@@ -139,6 +139,7 @@ class Controller:
 
     def signal_handler(self,signal, handler):
         self.killFlag = True
+        self.nwClient.killFlag = True
         reactor.callFromThread(reactor.stop)
 
 

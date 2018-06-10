@@ -10,6 +10,7 @@ from PyLightSupport.Commandos import *
 
 class NetworkClient(Protocol):
     def __init__(self, port: int, addr: str = '',interface = 'wlan0'):
+        self.killFlag = False
         self.runInitProces(port,addr,interface)
 
     def runInitProces(self,port,addr = "",interface = 'wlan0'):
@@ -34,6 +35,8 @@ class NetworkClient(Protocol):
 
         while True:
             for i in ipList:
+                if self.killFlag:
+                    return
                 ip = self.checkServer(i,ipTemplate)
                 if ip != '':
                     print(f"Found server at {ip}")
@@ -64,6 +67,7 @@ class NetworkClient(Protocol):
         self.transport.write(msg.encode())
 
     def dataReceived(self,data):
+        print(f"Data received: {data}")
         self.notifyInterestedParties(data)
 
     def registerProces(self, process):
