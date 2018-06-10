@@ -14,7 +14,7 @@ class NetworkClient(Protocol):
 
     def runInitProces(self,port,addr = "",interface = 'wlan0'):
         self.ip = self.get_ip_address(interface)
-        self.macAddress = self.getHwAddr('wlan0')
+        self.macAddress = self.getHwAddr(interface)
         print(self.ip)
         self.port = port
 

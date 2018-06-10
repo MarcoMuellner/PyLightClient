@@ -137,7 +137,7 @@ class Controller:
                 f"Length of message does not correspond to expected mesagelength. Message is {msgParts}, with "
                 f"length {len(msgParts)}. Expected command is {cmd[0]} with expected length {cmd[1]}.")
 
-    def signal_handler(self,_, _):
+    def signal_handler(self,signal, handler):
         self.killFlag = True
         reactor.callFromThread(reactor.stop)
 
