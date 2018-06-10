@@ -1,0 +1,3 @@
+[submodule "PyLightSupport"]
+	path = PyLightSupport
+	url = https://github.com/muma7490/PyLightSupport

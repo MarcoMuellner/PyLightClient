@@ -7,8 +7,8 @@ import sys
 from PyLightHardware import GPIOControl
 from PyLightControl.Network import NetworkClient
 from PyLightControl.Database import DB
-from Support.Globals import *
-from Support.Commandos import *
+from PyLightSupport.Globals import *
+from PyLightSupport.Commandos import *
 
 import time
 
@@ -118,6 +118,12 @@ class Controller:
 
         elif str(msgParts[0]) == cmd_client_connected[0]:
             self.sendNetworkMessage(cmd_signup[0]+f"||{self.nwClient.ip}||{self.nwClient.macAddress}||{self.hwControl.getserial()}")
+
+        elif str(msgParts[0]) == cmd_client_disconnected[0]:
+            self.nwClient.runInitProces(port)
+            point = TCP4ClientEndpoint(reactor, self.nwClient.server_addres, port)
+            reactor.callFromThread(connectProtocol(point, self.nwClient))
+
         else:
             print(f"Kommando {msgParts[0]} not known to client!")
 
@@ -131,7 +137,7 @@ class Controller:
                 f"Length of message does not correspond to expected mesagelength. Message is {msgParts}, with "
                 f"length {len(msgParts)}. Expected command is {cmd[0]} with expected length {cmd[1]}.")
 
-    def signal_handler(self,signal, frame):
+    def signal_handler(self,_, _):
         self.killFlag = True
         reactor.callFromThread(reactor.stop)
 

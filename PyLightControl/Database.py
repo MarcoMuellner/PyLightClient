@@ -1,6 +1,6 @@
 from PyLightORM.models import UsedIOs,ClientSettings,IOs,IOTypes,IOType
 from django.core.exceptions import ObjectDoesNotExist
-from Support import Singleton
+from PyLightSupport import Singleton
 
 @Singleton
 class DB:

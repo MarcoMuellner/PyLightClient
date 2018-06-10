@@ -2,7 +2,7 @@ from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 
 from PyLightTestServer import ServerFactory
-from Support.Globals import *
+from PyLightSupport.Globals import *
 
 def commander(factory: ServerFactory):
     print("-----------------------------------------------------------")

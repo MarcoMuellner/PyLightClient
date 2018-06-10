@@ -6,25 +6,28 @@ from twisted.internet.protocol import Protocol
 
 import time
 
-from Support.Commandos import *
+from PyLightSupport.Commandos import *
 
 class NetworkClient(Protocol):
     def __init__(self, port: int, addr: str = '',interface = 'wlan0'):
+        self.runInitProces(port,addr,interface)
+
+    def runInitProces(self,port,addr = "",interface = 'wlan0'):
         self.ip = self.get_ip_address(interface)
         self.macAddress = self.getHwAddr('wlan0')
         print(self.ip)
         self.port = port
 
         if addr is not '' and len(addr.split('.')) == 4:
-            _,ipTemplate,ipParts = self.getIPParts(addr)
-            ip = self.checkServer(ipParts[3],ipTemplate)
+            _, ipTemplate, ipParts = self.getIPParts(addr)
+            ip = self.checkServer(ipParts[3], ipTemplate)
             if ip != '':
                 print(f"Found server at {ip}")
                 self.server_addres = addr
             else:
                 self.server_addres = self.getServer()
         else:
-            self.server_addres= self.getServer()
+            self.server_addres = self.getServer()
 
     def getServer(self) -> tuple:
         ipList,ipTemplate,_ = self.getIPParts(self.ip)
@@ -61,9 +64,7 @@ class NetworkClient(Protocol):
         self.transport.write(msg.encode())
 
     def dataReceived(self,data):
-        print(data)
-        for process in self.registeredProcesses:
-            process.put_message(data)
+        self.notifyInterestedParties(data)
 
     def registerProces(self, process):
         try:
@@ -86,10 +87,15 @@ class NetworkClient(Protocol):
 
     def connectionMade(self):
         print("Client connected!")
-        for process in self.registeredProcesses:
-            process.put_message(str.encode(cmd_client_connected[0]))
+        self.notifyInterestedParties(str.encode(cmd_client_connected[0]))
 
-    def connectionLost(self):
-        print("Connection lost!")
+    def connectionLost(self,reason):
+        print(f"Connection lost due to {reason}")
+        self.notifyInterestedParties(str.encode(cmd_client_disconnected[0]))
+
+
+    def notifyInterestedParties(self,data):
+        for process in self.registeredProcesses:
+            process.put_message(data)
 
 
