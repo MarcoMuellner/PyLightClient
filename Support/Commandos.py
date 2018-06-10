@@ -1,5 +1,5 @@
 #Server Messages
-cmd_signup = ("SIGNUP_CALL",1)
+cmd_signup = ("SIGNUP_CALL",4)
 cmd_welcome = ("WELCOME_PI",2)
 cmd_add_output = ("ADD_NEW_OUT",3)
 cmd_set_output = ("SET_OUT",2)

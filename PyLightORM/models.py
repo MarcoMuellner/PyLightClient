@@ -27,4 +27,5 @@ class UsedIOs(models.Model):
 
 class ClientSettings(models.Model):
     clientName = models.CharField(max_length=255,verbose_name='Name of the pi client',default="")
-    serverAddress = models.CharField(max_length=255,verbose_name='Address of the server that set the ip of the pi',default="")
+    serverAddress = models.CharField(max_length=255,verbose_name='Address of the server that set the ip of the pi'
+                                                                 '',default="")

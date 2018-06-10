@@ -1,6 +1,7 @@
 import socket
 import fcntl
 import struct
+import binascii
 from twisted.internet.protocol import Protocol
 
 import time
@@ -8,8 +9,9 @@ import time
 from Support.Commandos import *
 
 class NetworkClient(Protocol):
-    def __init__(self, port: int, addr: str = '',interface = 'eth0'):
+    def __init__(self, port: int, addr: str = '',interface = 'wlan0'):
         self.ip = self.get_ip_address(interface)
+        self.macAddress = self.getHwAddr('wlan0')
         print(self.ip)
         self.port = port
 
@@ -77,9 +79,17 @@ class NetworkClient(Protocol):
             struct.pack(b'256s', str.encode(ifname[:15]))
         )[20:24])
 
+    def getHwAddr(self,ifname):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        info = fcntl.ioctl(s.fileno(), 0x8927, struct.pack('256s', bytes(ifname[:15], 'utf-8')))
+        return ''.join(l + ':' * (n % 2 == 1) for n, l in enumerate(binascii.hexlify(info[18:24]).decode('utf-8')))[:-1]
+
     def connectionMade(self):
         print("Client connected!")
         for process in self.registeredProcesses:
             process.put_message(str.encode(cmd_client_connected[0]))
+
+    def connectionLost(self):
+        print("Connection lost!")
 
 

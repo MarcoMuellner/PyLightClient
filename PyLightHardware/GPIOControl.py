@@ -174,3 +174,17 @@ class GPIOControl:
         :return: Returns dict of all used IOS, containing names and current state
         """
         return self._usedIOs
+
+    def getserial(self):
+        # Extract serial from cpuinfo file
+        cpuserial = "0000000000000000"
+        try:
+            f = open('/proc/cpuinfo', 'r')
+            for line in f:
+                if line[0:6] == 'Serial':
+                    cpuserial = line[10:26]
+            f.close()
+        except:
+            cpuserial = "ERROR000000000"
+
+        return cpuserial

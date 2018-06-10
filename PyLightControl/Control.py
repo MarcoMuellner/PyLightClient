@@ -1,6 +1,8 @@
 from twisted.internet.endpoints import TCP4ClientEndpoint, connectProtocol
 from twisted.internet import reactor
-from queue import Queue
+from queue import Queue,Empty
+import signal
+import sys
 
 from PyLightHardware import GPIOControl
 from PyLightControl.Network import NetworkClient
@@ -43,7 +45,7 @@ class Controller:
         self.hwControl = GPIOControl(self.resetFlag)
 
         self.queue = Queue()
-
+        signal.signal(signal.SIGINT, self.signal_handler)
         self.startProcesses()
 
     def startProcesses(self):
@@ -63,8 +65,11 @@ class Controller:
         """
         print("STARTING COMMAND LOOP!")
         while True:
-            message = self.queue.get()
-            self.parse_message(message)
+            try:
+                message = self.queue.get(timeout=1)
+                self.parse_message(message)
+            except Empty:
+                pass
             if self.killFlag:
                 break
 
@@ -82,7 +87,7 @@ class Controller:
         length.
         :param msg: Network message
         """
-        msgParts = msg.decode().split(":")
+        msgParts = msg.decode().split("||")
 
         if str(msgParts[0]) == cmd_welcome[0]:
             self.checkMessage(msgParts,cmd_welcome)
@@ -90,9 +95,9 @@ class Controller:
             DB.inst().setPiName(self.name)
 
             allIOS = self.hwControl.allIOs
-            self.sendNetworkMessage(cmd_all_io_list[0]+f":{self.name}:{allIOS}")
+            self.sendNetworkMessage(cmd_all_io_list[0]+f"||{self.name}||{allIOS}")
             usedIOS = self.hwControl.getUsedIOS()
-            self.sendNetworkMessage(cmd_used_io_list[0]+f":{self.name}:{usedIOS}")
+            self.sendNetworkMessage(cmd_used_io_list[0]+f"||{self.name}||{usedIOS}")
 
         elif str(msgParts[0]) == cmd_add_output[0]:
             self.checkMessage(msgParts, cmd_add_output)
@@ -112,8 +117,7 @@ class Controller:
             reactor.callFromThread(reactor.stop)
 
         elif str(msgParts[0]) == cmd_client_connected[0]:
-            self.sendNetworkMessage(cmd_signup[0])
-
+            self.sendNetworkMessage(cmd_signup[0]+f"||{self.nwClient.ip}||{self.nwClient.macAddress}||{self.hwControl.getserial()}")
         else:
             print(f"Kommando {msgParts[0]} not known to client!")
 
@@ -126,4 +130,10 @@ class Controller:
             raise ValueError(
                 f"Length of message does not correspond to expected mesagelength. Message is {msgParts}, with "
                 f"length {len(msgParts)}. Expected command is {cmd[0]} with expected length {cmd[1]}.")
+
+    def signal_handler(self,signal, frame):
+        self.killFlag = True
+        reactor.callFromThread(reactor.stop)
+
+
 
