@@ -14,8 +14,8 @@ class NetworkClient(Protocol):
         self.runInitProces(port,addr,interface)
 
     def runInitProces(self,port,addr = "",interface = 'wlan0'):
-        self.ip = self.get_ip_address(interface)
-        self.macAddress = self.getHwAddr(interface)
+        self.ip = '192.168.0.102'#self.get_ip_address(interface)
+        self.macAddress = 'ac:bc:32:c2:4b:5f'#self.getHwAddr(interface)
         print(self.ip)
         self.port = port
 

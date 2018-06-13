@@ -11,7 +11,7 @@ DATABASES = {
 }
 
 INSTALLED_APPS = (
-    'PyLightORM',
+    'PyLightCommon.pylightcommon.apps.PylightcommonConfig',
 )
 
 SECRET_KEY = 'REPLACE_ME'

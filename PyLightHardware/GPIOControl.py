@@ -8,7 +8,7 @@ except Exception as e:
     piHW = False
 
 from PyLightControl.Database import DB
-from PyLightORM.models import IOType
+from PyLightCommon.pylightcommon.models import EnumIOType
 
 
 class GPIOControl:
@@ -23,19 +23,20 @@ class GPIOControl:
         if piHW:
             GPIO.setmode(GPIO.BOARD)
         #Defines the "Unused" pins
-        self.allIOs = DB.inst().getAllIOs()
+        self.allIOs = DB.inst().getAllIO()
         if resetFlag:
             self._openIOs = self.allIOs[:]
             self._usedIOs = {}
             DB.inst().removeAllUsedIO()
         else:
-            self._usedIOs = DB.inst().getUsedIOs()
+            self._usedIOs = DB.inst().getUsedIO()
             self._openIOs = self.allIOs[:]
             self._openIOs = [x for x in self._openIOs if x not in DB.inst().getUsedIOPinNr()]
             for key,val in self._usedIOs.items():
-                if val[1] == IOType.OUTPUT:
-                    GPIO.setup(val[0], GPIO.OUT, initial=False)
-                    self.setOutputState(key,val[2])
+                if val[1] == EnumIOType.OUTPUT:
+                    if piHW:
+                        GPIO.setup(val[0], GPIO.OUT, initial=False)
+                        self.setOutputState(key,val[2])
 
     def newOutput(self, name: str, pin: int) -> bool:
         """
@@ -44,7 +45,7 @@ class GPIOControl:
         :param pin: Pin number that should be used
         :return: True if output was added successfully. False if not
         """
-        return self.newIO(IOType.OUTPUT,name,pin)
+        return self.newIO(EnumIOType.OUTPUT,name,pin)
 
     def newInput(self, name: str, pin: int) -> bool:
         """
@@ -53,19 +54,19 @@ class GPIOControl:
         :param pin: Pin number that should be used
         :return: True if input was added successfully. False if not
         """
-        return self.newIO(IOType.INPUT,name,pin)
+        return self.newIO(EnumIOType.INPUT,name,pin)
 
-    def newIO(self, ioType: IOType, name: str, pin: int) -> bool:
+    def newIO(self, ioType: EnumIOType, name: str, pin: int) -> bool:
         """
         Adds a new IO to be controlled by GPIOControl. Afterwards it is accessible only via its name through the
         accesser functions. 
-        :param ioType: Type of the IO. Must be Enum of Type IOType
+        :param ioType: Type of the IO. Must be Enum of Type EnumIOType
         :param name: Human readable name for the IO
         :param pin: Pin number that should be used
         :return: True if input was added successfully, False if not
         """
-        if not isinstance(ioType,IOType):
-            raise TypeError("ioType must be of IOType enum!")
+        if not isinstance(ioType,EnumIOType):
+            raise TypeError("EnumIOType must be of EnumIOType enum!")
 
         if pin not in self.allIOs:
             raise ValueError(f"Pin {pin} is not in the available IOs!")
@@ -74,23 +75,23 @@ class GPIOControl:
             self.removeIO(pin)
 
         if piHW:
-            if ioType is IOType.OUTPUT:
+            if ioType is EnumIOType.OUTPUT:
                 GPIO.setup(pin,GPIO.OUT,initial=False)
-                self._usedIOs[name] = [pin, ioType, False]
-            elif ioType is IOType.INPUT:
+                self._usedIOs[name] = [pin, EnumIOType, False]
+            elif ioType is EnumIOType.INPUT:
                 GPIO.setup(pin,GPIO.IN)
-                self._usedIOs[name] = [pin, ioType]
+                self._usedIOs[name] = [pin, EnumIOType]
         else:
-            if ioType is IOType.OUTPUT:
-                self._usedIOs[name] = [pin, ioType, False]
-            elif ioType is IOType.INPUT:
-                self._usedIOs[name] = [pin, ioType]
+            if ioType is EnumIOType.OUTPUT:
+                self._usedIOs[name] = [pin, EnumIOType, False]
+            elif ioType is EnumIOType.INPUT:
+                self._usedIOs[name] = [pin, EnumIOType]
 
         self._openIOs.remove(pin)
 
-        if ioType not in DB.inst().getAllIOTypes():
-            raise ValueError(f"IOType is not Output nor input! Probably something that is not yet implemented? "
-                             f"Type is {ioType}. Available is {DB.inst().getAllIOTypes()}")
+        if ioType not in DB.inst().getAllIOType():
+            raise ValueError(f"EnumIOType is not Output nor input! Probably something that is not yet implemented? "
+                             f"Type is {EnumIOType}. Available is {DB.inst().getAllIOType()}")
         DB.inst().addUsedIO(name,pin,ioType)
         return True
 
@@ -142,7 +143,7 @@ class GPIOControl:
         :param state: State to set to
         :return: True if successful, False if not.
         """
-        if self._usedIOs[name][1] == IOType.OUTPUT:
+        if self._usedIOs[name][1] == EnumIOType.OUTPUT:
             if piHW:
                 GPIO.output(self._usedIOs[name][0], state)
             self._usedIOs[name][2] = state

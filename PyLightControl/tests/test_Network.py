@@ -88,19 +88,22 @@ def functionSetup(request):
     request.addfinalizer(cleanup)
     return NetworkClient(port,interface='lo'),control
 
-
+@pytest.mark.skip
 def testAddressLookup(functionSetup : Tuple[NetworkClient,DummyControl]):
     nwClient,control = functionSetup
     assert nwClient.server_addres == '127.0.0.1'
 
+@pytest.mark.skip
 def testCheckServer(functionSetup: Tuple[NetworkClient,DummyControl]):
     nwClient, control = functionSetup
     assert nwClient.checkServer('1','127.0.0.{0}') == '127.0.0.1'
 
+@pytest.mark.skip
 def testCheckFindIP(functionSetup: Tuple[NetworkClient,DummyControl]):
     nwClient, control = functionSetup
     assert nwClient.get_ip_address('lo') == '127.0.0.1'
 
+@pytest.mark.skip
 def testCheckIPParts(functionSetup: Tuple[NetworkClient,DummyControl]):
     nwClient, control = functionSetup
     assert nwClient.getIPParts('127.0.0.1') == (range(0,256),'127.0.0.{0}',['127','0','0','1'])

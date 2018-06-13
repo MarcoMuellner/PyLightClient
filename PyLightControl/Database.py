@@ -1,87 +1,88 @@
-from PyLightORM.models import UsedIOs,ClientSettings,IOs,IOTypes,IOType
+from PyLightCommon.pylightcommon.models import UsedIO,ClientSettings,IO,IOType,EnumIOType
 from django.core.exceptions import ObjectDoesNotExist
 from PyLightCommon import Singleton
 
 @Singleton
 class DB:
-    def getAllIOs(self):
-        return list(IOs.objects.exclude(pk=0).values_list('ioNr',flat=True))
+    def getAllIO(self):
+        return list(IO.objects.exclude(pk=0).values_list('ioNr',flat=True))
 
-    def getAllIOTypes(self):
+    def getAllIOType(self):
         typeList = []
-        for i in IOTypes.objects.exclude(pk=0).values_list('ioType'):
-            typeList.append(IOType(i[0]))
+        for i in IOType.objects.exclude(pk=0).values_list('ioType'):
+            typeList.append(EnumIOType(i[0]))
         return typeList
 
-    def getUsedIOs(self):
-        usedIOs = {}
-        for i in UsedIOs.objects.all():
-            if i.pk ==0:
-                continue
-            usedIOs[i.name] = [i.pin_id,IOType(i.type.ioType),i.active]
+    def getUsedIO(self):
+        usedIODict = {}
+        for i in UsedIO.objects.all():
+            usedIODict[i.name] = [i.pin_id, EnumIOType(i.type.ioType), i.active]
 
-        return usedIOs
+        return usedIODict
 
     def getUsedIOPinNr(self):
-        return list(UsedIOs.objects.all().values_list('pin_id',flat=True))[1:]
+        return list(UsedIO.objects.all().values_list('pin_id',flat=True))
 
-    def addUsedIO(self, name, io, ioType):
-        usedIOList = UsedIOs.objects.filter(name=name)
+    def addUsedIO(self, name, io, ioType: EnumIOType):
+        usedIOList = UsedIO.objects.filter(name=name)
         if len(usedIOList) > 0:
             raise ValueError(f"An IO with name {name} is allready assigned. Allready assigned names "
-                             f"are {list(UsedIOs.objects.all().values_list('name',flat=True))}")
+                             f"are {list(UsedIO.objects.all().values_list('name',flat=True))}")
 
         try:
-            io = IOs.objects.get(ioNr=io)
+            io = IO.objects.get(ioNr=io)
         except ObjectDoesNotExist:
-            raise ValueError(f"No Pin available with nr {io}. Pins available are: {self.getAllIOs()}")
+            raise ValueError(f"No Pin available with nr {io}. Pins available are: {self.getAllIO()}")
 
         try:
-            ioTypus = IOTypes.objects.get(ioType=ioType)
+            ioTypus = IOType.objects.get(ioType=ioType.value)
         except ObjectDoesNotExist:
-            raise ValueError(f"No IOType with type {ioType} available. Available types are {list(IOTypes.objects.all())}")
+            raise ValueError(f"No IOType with type {ioType} available. Available types are {list(IOType.objects.all())}")
+        except AttributeError:
+            raise ValueError(
+                f"IOType {ioType} is no correct IO Type.")
 
-        newIO = UsedIOs(name=name,pin=io,type=ioTypus,active=False)
+        newIO = UsedIO(name=name,pin=io,type=ioTypus,active=False)
         newIO.save()
 
     def removeUsedIO(self,name):
-        UsedIOs.objects.filter(name=name).delete()
+        UsedIO.objects.filter(name=name).delete()
 
     def removeAllUsedIO(self):
-        UsedIOs.objects.exclude(pk=0).delete()
+        UsedIO.objects.exclude(pk=0).delete()
 
 
     def changeIOState(self,name,state):
         try:
-            usedIO = UsedIOs.objects.get(name=name)
+            usedIO = UsedIO.objects.get(name=name)
         except ObjectDoesNotExist:
             raise ValueError(f"There is no IO assigned with name {name}. Allready assigned names "
-                             f"are {list(UsedIOs.objects.all().values_list('name',flat=True))}")
+                             f"are {list(UsedIO.objects.all().values_list('name',flat=True))}")
 
         usedIO.active = state
         usedIO.save()
 
     def getIOState(self,name):
         try:
-            usedIO = UsedIOs.objects.get(name=name)
+            usedIO = UsedIO.objects.get(name=name)
         except ObjectDoesNotExist:
             raise ValueError(f"There is no IO assigned with name {name}. Allready assigned names "
-                             f"are {list(UsedIOs.objects.all().values_list('name',flat=True))}")
+                             f"are {list(UsedIO.objects.all().values_list('name',flat=True))}")
 
         return usedIO.active
 
 
     def getPinName(self,io):
         try:
-            io = IOs.objects.get(ioNr=io)
+            io = IO.objects.get(ioNr=io)
         except ObjectDoesNotExist:
-            raise ValueError(f"No Pin available with nr {io}. Pins available are: {self.getAllIOs()}")
+            raise ValueError(f"No Pin available with nr {io}. Pins available are: {self.getAllIO()}")
 
         try:
-            usedIO = UsedIOs.objects.get(pin=io)
+            usedIO = UsedIO.objects.get(pin=io)
         except ObjectDoesNotExist:
             raise ValueError(f"There is no IO assigned with pin {io}. Allready assigned names "
-                             f"are {list(UsedIOs.objects.all().values_list('pin',flat=True))}")
+                             f"are {list(UsedIO.objects.all().values_list('pin',flat=True))}")
 
         return usedIO.name
 
@@ -91,22 +92,23 @@ class DB:
         except ObjectDoesNotExist:
             settings = ClientSettings(pk=1)
 
-        settings.clientName = name
+        settings.name = name
         settings.save()
 
     def getPiName(self):
         try:
             settings = ClientSettings.objects.get(pk=1)
         except ObjectDoesNotExist:
-            settings = ClientSettings.objects.get(pk=0)
+            settings = self.setupDefaultSettings()
 
-        return settings.clientName
+        return settings.name
 
     def getServerAddress(self):
         try:
             settings = ClientSettings.objects.get(pk=1)
         except ObjectDoesNotExist:
-            settings = ClientSettings.objects.get(pk=0)
+            settings = ClientSettings(pk=0)
+            settings.save()
 
         return settings.serverAddress
 
@@ -118,3 +120,8 @@ class DB:
 
         settings.serverAddress = address
         settings.save()
+
+    def setupDefaultSettings(self):
+        settings = ClientSettings(pk=0)
+        settings.save()
+        return settings

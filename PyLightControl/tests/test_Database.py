@@ -1,62 +1,62 @@
 import pytest
 from PyLightControl.Database import DB
-from PyLightORM.models import UsedIOs,ClientSettings,IOs,IOTypes,IOType
+from PyLightCommon.pylightcommon.models import UsedIO,ClientSettings,IO,IOType,EnumIOType
 
 @pytest.fixture(autouse=True)
 def enable_db_access_for_all_tests(db):
     pass
 
-def testGetAllIOs():
-    assert len(DB.inst().getAllIOs()) == len(IOs.objects.all())-1
+def testGetAllIO():
+    assert len(DB.inst().getAllIO()) == len(IO.objects.all()) - 1
 
-def testGetAllIOTypes():
-    assert len(DB.inst().getAllIOTypes()) == len(IOTypes.objects.all()) -1
+def testGetAllIOType():
+    assert len(DB.inst().getAllIOType()) == len(IOType.objects.all()) - 1
 
-def testGetUsedIOs():
-    assert len(DB.inst().getUsedIOs()) == len(UsedIOs.objects.all()) -1
-    io = IOs.objects.filter(ioNr=3)[0]
-    ioType = IOTypes.objects.filter(pk=1)[0]
-    newIO = UsedIOs(name="test",pin=io,type=ioType,active=False)
+def testGetUsedIO():
+    assert len(DB.inst().getUsedIO()) == len(UsedIO.objects.all())
+    io = IO.objects.filter(ioNr=3)[0]
+    ioType = IOType.objects.filter(pk=1)[0]
+    newIO = UsedIO(name="test",pin=io,type=ioType,active=False)
     newIO.save()
-    assert len(DB.inst().getUsedIOs()) == len(UsedIOs.objects.all()) - 1
+    assert len(DB.inst().getUsedIO()) == len(UsedIO.objects.all())
 
 def testAddUsedIO():
-    for i in DB.inst().getAllIOs():
-        DB.inst().addUsedIO(f"test{i}",i,IOType.OUTPUT)
+    for i in DB.inst().getAllIO():
+        DB.inst().addUsedIO(f"test{i}",i,EnumIOType.OUTPUT)
 
-    assert len(DB.inst().getUsedIOs()) == len(DB.inst().getAllIOs())
+    assert len(DB.inst().getUsedIO()) == len(DB.inst().getAllIO())
 
 def testAddUsedIOFailed():
     with pytest.raises(ValueError):
-        DB.inst().addUsedIO(f"test", 100, IOType.OUTPUT)
+        DB.inst().addUsedIO(f"test", 100, EnumIOType.OUTPUT)
 
     with pytest.raises(ValueError):
         DB.inst().addUsedIO(f"test", 3, -1)
 
-    DB.inst().addUsedIO(f"test", 3, IOType.OUTPUT)
+    DB.inst().addUsedIO(f"test", 3, EnumIOType.OUTPUT)
 
     with pytest.raises(ValueError):
-        DB.inst().addUsedIO(f"test", 3, IOType.OUTPUT)
+        DB.inst().addUsedIO(f"test", 3, EnumIOType.OUTPUT)
 
     with pytest.raises(ValueError):
-        DB.inst().addUsedIO(f"test", 4, IOType.OUTPUT)
+        DB.inst().addUsedIO(f"test", 4, EnumIOType.OUTPUT)
 
 
 def testChangeIOState():
-    DB.inst().addUsedIO(f"test", 3, IOType.OUTPUT)
-    assert UsedIOs.objects.filter(name=f"test")[0].active == False
+    DB.inst().addUsedIO(f"test", 3, EnumIOType.OUTPUT)
+    assert UsedIO.objects.filter(name=f"test")[0].active == False
     DB.inst().changeIOState(f"test",True)
-    assert UsedIOs.objects.filter(name=f"test")[0].active == True
+    assert UsedIO.objects.filter(name=f"test")[0].active == True
 
 def testGetIOState():
-    DB.inst().addUsedIO(f"test", 3, IOType.OUTPUT)
+    DB.inst().addUsedIO(f"test", 3, EnumIOType.OUTPUT)
     assert DB.inst().getIOState(f"test") == False
     DB.inst().changeIOState(f"test", True)
     assert DB.inst().getIOState(f"test") == True
 
 def testGetPinName():
-    DB.inst().addUsedIO(f"test", 3, IOType.OUTPUT)
-    assert UsedIOs.objects.filter(name=f"test")[0].pin_id == 3
+    DB.inst().addUsedIO(f"test", 3, EnumIOType.OUTPUT)
+    assert UsedIO.objects.filter(name=f"test")[0].pin_id == 3
     assert DB.inst().getPinName(3) == f"test"
 
     with pytest.raises(ValueError):
@@ -67,7 +67,7 @@ def testGetPinName():
 
 def testSetPiName():
     DB.inst().setPiName("Hello_Pi")
-    assert ClientSettings.objects.filter(pk=1)[0].clientName == "Hello_Pi"
+    assert ClientSettings.objects.filter(pk=1)[0].name == "Hello_Pi"
     assert ClientSettings.objects.filter(pk=1)[0].serverAddress == ""
 
 def testGetPiName():
@@ -81,7 +81,7 @@ def testGetPiName():
 
 def testSetServerAddress():
     DB.inst().setServerAddress('127.0.0.1')
-    assert ClientSettings.objects.filter(pk=1)[0].clientName == ""
+    assert ClientSettings.objects.filter(pk=1)[0].name == ""
     assert ClientSettings.objects.filter(pk=1)[0].serverAddress == "127.0.0.1"
 
 def testGetServerAddress():
@@ -95,27 +95,27 @@ def testGetServerAddress():
 
 def testGetUsedIOPinNr():
     assert len(DB.inst().getUsedIOPinNr()) == 0
-    DB.inst().addUsedIO(f"test", 3, IOType.OUTPUT)
+    DB.inst().addUsedIO(f"test", 3, EnumIOType.OUTPUT)
     assert len(DB.inst().getUsedIOPinNr()) == 1
     assert 3 in DB.inst().getUsedIOPinNr()
 
 def testRemoveUsedIO():
-    assert len(DB.inst().getUsedIOs()) == 0
-    DB.inst().addUsedIO(f"test", 3, IOType.OUTPUT)
-    assert len(DB.inst().getUsedIOs()) == 1
+    assert len(DB.inst().getUsedIO()) == 0
+    DB.inst().addUsedIO(f"test", 3, EnumIOType.OUTPUT)
+    assert len(DB.inst().getUsedIO()) == 1
     DB.inst().removeUsedIO(f"test")
-    assert len(DB.inst().getUsedIOs()) == 0
+    assert len(DB.inst().getUsedIO()) == 0
 
 def testRemoveAllUsedIO():
-    assert len(DB.inst().getUsedIOs()) == 0
-    for i in DB.inst().getAllIOs():
-        DB.inst().addUsedIO(f"test{i}",i,IOType.OUTPUT)
+    assert len(DB.inst().getUsedIO()) == 0
+    for i in DB.inst().getAllIO():
+        DB.inst().addUsedIO(f"test{i}",i,EnumIOType.OUTPUT)
 
-    assert len(DB.inst().getUsedIOs()) == len(DB.inst().getAllIOs())
+    assert len(DB.inst().getUsedIO()) == len(DB.inst().getAllIO())
 
     DB.inst().removeAllUsedIO()
 
-    assert len(DB.inst().getUsedIOs()) == 0
+    assert len(DB.inst().getUsedIO()) == 0
 
 
 
