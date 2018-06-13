@@ -10,7 +10,7 @@ from twisted.internet import reactor
 import time
 
 from PyLightControl import NetworkClient
-from PyLightSupport.Globals import *
+from PyLightCommon.Globals import *
 
 killFlag = False
 

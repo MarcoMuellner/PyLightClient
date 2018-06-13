@@ -7,8 +7,8 @@ import sys
 from PyLightHardware import GPIOControl
 from PyLightControl.Network import NetworkClient
 from PyLightControl.Database import DB
-from PyLightSupport.Globals import *
-from PyLightSupport.Commandos import *
+from PyLightCommon.Globals import *
+from PyLightCommon.Commandos import *
 
 import time
 

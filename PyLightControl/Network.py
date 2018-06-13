@@ -6,7 +6,7 @@ from twisted.internet.protocol import Protocol
 
 import time
 
-from PyLightSupport.Commandos import *
+from PyLightCommon.Commandos import *
 
 class NetworkClient(Protocol):
     def __init__(self, port: int, addr: str = '',interface = 'wlan0'):
