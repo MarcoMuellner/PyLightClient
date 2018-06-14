@@ -7,7 +7,7 @@ except Exception as e:
     print("Setting Hardware to False")
     piHW = False
 
-from PyLightControl.Database import DB
+from control.Database import DB
 from PyLightCommon.pylightcommon.models import EnumIOType
 
 

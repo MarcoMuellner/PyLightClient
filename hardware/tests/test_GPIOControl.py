@@ -1,5 +1,5 @@
 import pytest
-from PyLightHardware.GPIOControl import GPIOControl
+from hardware.GPIOControl import GPIOControl
 from PyLightCommon.pylightcommon.models import EnumIOType
 
 @pytest.fixture(autouse=True)
