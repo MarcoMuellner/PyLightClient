@@ -2,15 +2,14 @@ from twisted.internet.endpoints import TCP4ClientEndpoint, connectProtocol
 from twisted.internet import reactor
 from queue import Queue,Empty
 import signal
-import sys
+
 
 from PyLightHardware import GPIOControl
 from PyLightControl.Network import NetworkClient
 from PyLightControl.Database import DB
 from PyLightCommon.Globals import *
 from PyLightCommon.Commandos import *
-
-import time
+from PyLightCommon.updater import updater
 
 
 
