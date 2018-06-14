@@ -1,1 +1,1 @@
-from PyLightHardware.GPIOControl import GPIOControl
+from hardware.GPIOControl import GPIOControl

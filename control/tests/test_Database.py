@@ -1,5 +1,5 @@
 import pytest
-from PyLightControl.Database import DB
+from control.Database import DB
 from PyLightCommon.pylightcommon.models import UsedIO,ClientSettings,IO,IOType,EnumIOType
 
 @pytest.fixture(autouse=True)

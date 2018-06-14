@@ -4,9 +4,9 @@ from queue import Queue,Empty
 import signal
 
 
-from PyLightHardware import GPIOControl
-from PyLightControl.Network import NetworkClient
-from PyLightControl.Database import DB
+from hardware import GPIOControl
+from control.Network import NetworkClient
+from control.Database import DB
 from PyLightCommon.Globals import *
 from PyLightCommon.Commandos import *
 from PyLightCommon.updater import updater

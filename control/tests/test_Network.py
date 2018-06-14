@@ -9,7 +9,7 @@ from twisted.internet.endpoints import TCP4ServerEndpoint,TCP4ClientEndpoint, co
 from twisted.internet import reactor
 import time
 
-from PyLightControl import NetworkClient
+from control import NetworkClient
 from PyLightCommon.Globals import *
 
 killFlag = False

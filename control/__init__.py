@@ -1,2 +1,2 @@
-from PyLightControl.Control import Controller
-from PyLightControl.Network import NetworkClient
+from control.Control import Controller
+from control.Network import NetworkClient
