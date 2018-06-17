@@ -19,5 +19,5 @@ import serverCommunication
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('serverCommunication',include('serverCommunication.urls'))
+    path('serverCommunication/',include('serverCommunication.urls'))
 ]

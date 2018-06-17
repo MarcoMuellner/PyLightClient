@@ -9,14 +9,15 @@ except Exception as e:
 
 from control.Database import DB
 from PyLightCommon.pylightcommon.models import EnumIOType
+from PyLightCommon import Singleton
 
-
+@Singleton
 class GPIOControl:
     """
     GPIOControl allows for a central point of controlling the IOs on the Pi. Access the IOs through custom names 
     for each output (preferably defined via the  Web interface).     
     """
-    def __init__(self,resetFlag: bool):
+    def __init__(self):
         """
         Sets up the Board, creates lists for available pins
         """
@@ -24,19 +25,9 @@ class GPIOControl:
             GPIO.setmode(GPIO.BOARD)
         #Defines the "Unused" pins
         self.allIOs = DB.inst().getAllIO()
-        if resetFlag:
-            self._openIOs = self.allIOs[:]
-            self._usedIOs = {}
-            DB.inst().removeAllUsedIO()
-        else:
-            self._usedIOs = DB.inst().getUsedIO()
-            self._openIOs = self.allIOs[:]
-            self._openIOs = [x for x in self._openIOs if x not in DB.inst().getUsedIOPinNr()]
-            for key,val in self._usedIOs.items():
-                if val[1] == EnumIOType.OUTPUT:
-                    if piHW:
-                        GPIO.setup(val[0], GPIO.OUT, initial=False)
-                        self.setOutputState(key,val[2])
+        self._usedIOs = DB.inst().getUsedIO()
+        self._openIOs = [x for x in self._openIOs if x not in DB.inst().getUsedIOPinNr()]
+        DB.inst().removeAllUsedIO()
 
     def newOutput(self, name: str, pin: int) -> bool:
         """
@@ -77,15 +68,15 @@ class GPIOControl:
         if piHW:
             if ioType is EnumIOType.OUTPUT:
                 GPIO.setup(pin,GPIO.OUT,initial=False)
-                self._usedIOs[name] = [pin, EnumIOType, False]
+                self._usedIOs[name] = [pin, EnumIOType.OUTPUT, False]
             elif ioType is EnumIOType.INPUT:
                 GPIO.setup(pin,GPIO.IN)
-                self._usedIOs[name] = [pin, EnumIOType]
+                self._usedIOs[name] = [pin, EnumIOType.INPUT]
         else:
             if ioType is EnumIOType.OUTPUT:
-                self._usedIOs[name] = [pin, EnumIOType, False]
+                self._usedIOs[name] = [pin, EnumIOType.OUTPUT, False]
             elif ioType is EnumIOType.INPUT:
-                self._usedIOs[name] = [pin, EnumIOType]
+                self._usedIOs[name] = [pin, EnumIOType.INPUT]
 
         self._openIOs.remove(pin)
 

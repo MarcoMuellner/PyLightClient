@@ -1,5 +1,7 @@
 from django.urls import path
 
-from . import views
+from serverCommunication.views import ServerCommunication
 
-path('', views.handleRequests, name='postHardware'),
+urlpatterns = [
+path('', ServerCommunication.as_view(), name='postHardware'),
+        ]

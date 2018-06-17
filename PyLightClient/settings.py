@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
+from huey import RedisHuey
+from PyLightCommon.loghandler import setup_logging
+
+setup_logging()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -38,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'PyLightCommon.pylightcommon.apps.PylightcommonConfig',
-    'serverCommunication.apps.ServercommunicationConfig'
+    'serverCommunication.apps.ServercommunicationConfig',
+    'huey.contrib.djhuey',  # Add this to the list
 ]
 
 MIDDLEWARE = [
@@ -120,3 +125,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# Redis running locally with four worker threads.
+HUEY = {
+    'name': 'my-app',
+    'always_eager' : False,
+    'consumer': {'workers': 4, 'worker_type': 'thread'},
+}
+
+huey = RedisHuey('my-app')

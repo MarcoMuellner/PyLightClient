@@ -24,10 +24,7 @@ class DB:
         return list(UsedIO.objects.all().values_list('pin_id',flat=True))
 
     def addUsedIO(self, name, io, ioType: EnumIOType):
-        usedIOList = UsedIO.objects.filter(name=name)
-        if len(usedIOList) > 0:
-            raise ValueError(f"An IO with name {name} is allready assigned. Allready assigned names "
-                             f"are {list(UsedIO.objects.all().values_list('name',flat=True))}")
+        UsedIO.objects.filter(name=name).delete()
 
         try:
             io = IO.objects.get(ioNr=io)
