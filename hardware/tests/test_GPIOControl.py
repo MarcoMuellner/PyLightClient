@@ -8,11 +8,11 @@ def enable_db_access_for_all_tests(db):
 
 @pytest.fixture(scope='module')
 def moduleSetup(request):
-    return GPIOControl(True)
+    return GPIOControl.inst()
 
 @pytest.fixture(scope='function')
 def functionSetup(request):
-    return GPIOControl(True)
+    return GPIOControl.inst()
 
 testCases = [("One",3,EnumIOType.OUTPUT.value),
              ("Two",5,EnumIOType.OUTPUT.value),

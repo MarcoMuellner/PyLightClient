@@ -1,0 +1,28 @@
+[
+
+  {
+    "commando": "changeOut",
+    "response": "Ok",
+    "type": "in",
+    "hooked_function": {
+      "3,2": "changeIOOut"
+    }
+  },
+  {
+    "commando": "addOut",
+    "response": "Ok",
+    "type": "in",
+    "hooked_function":{
+      "1,5":"addNewIO"
+    }
+  },
+  {
+    "commando": "nameChange",
+    "response": "Ok",
+    "type": "in",
+    "hooked_function":{
+      "2":"changeSystemName"
+    }
+
+  }
+]

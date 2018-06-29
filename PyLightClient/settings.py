@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'PyLightCommon.pylightcommon.apps.PylightcommonConfig',
     'serverCommunication.apps.ServercommunicationConfig',
+    'PyLightCommon.cmdHandler.apps.CmdhandlerConfig',
     'huey.contrib.djhuey',  # Add this to the list
 ]
 
@@ -134,3 +135,5 @@ HUEY = {
 }
 
 huey = RedisHuey('my-app')
+
+CMDPATH = os.path.join(BASE_DIR,"cmdFiles")

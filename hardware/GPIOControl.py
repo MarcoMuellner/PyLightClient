@@ -26,7 +26,7 @@ class GPIOControl:
         #Defines the "Unused" pins
         self.allIOs = DB.inst().getAllIO()
         self._usedIOs = DB.inst().getUsedIO()
-        self._openIOs = [x for x in self._openIOs if x not in DB.inst().getUsedIOPinNr()]
+        self._openIOs = [x for x in self.allIOs if x not in DB.inst().getUsedIOPinNr()]
         DB.inst().removeAllUsedIO()
 
     def newOutput(self, name: str, pin: int) -> bool:
@@ -56,6 +56,7 @@ class GPIOControl:
         :param pin: Pin number that should be used
         :return: True if input was added successfully, False if not
         """
+        pin = int(pin)
         if not isinstance(ioType,EnumIOType):
             raise TypeError("EnumIOType must be of EnumIOType enum!")
 

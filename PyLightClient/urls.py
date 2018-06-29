@@ -15,9 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-import serverCommunication
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('serverCommunication/',include('serverCommunication.urls'))
+    path('serverCommunication/',include('serverCommunication.urls')),
+    path('cmdHandler/', include(('PyLightCommon.cmdHandler.urls','PyLightCommon.cmdHandler'),namespace='cmdHandler')),
 ]

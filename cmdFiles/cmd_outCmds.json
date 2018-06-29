@@ -1,0 +1,30 @@
+[
+  {
+    "commando": "Signup",
+    "response": "Ok",
+    "type": "out",
+    "method": "post",
+    "parameters": [
+      "lastIP",
+      "lastMacAddress",
+      "serialNumber",
+      "connected",
+      "active"
+    ],
+    "model":{
+      "name":"pylightcommon.ClientSettings",
+      "id":{
+      },
+      "setValue":
+      {
+        "serverAddress":"lastIP",
+        "connected":"connectedToServer"
+      },
+      "fields":
+      {
+
+      }
+    }
+  }
+
+]

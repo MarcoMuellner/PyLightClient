@@ -6,3 +6,5 @@ RPi.GPIO
 pytz==2017.2
 huey
 redis
+requests
+httmock
